@@ -1,18 +1,43 @@
+const organizze = require('./helpers/organizze')
+const { cleanUpHomeDirectory } = require('./helpers/tearDown')
 const {
-  cleanUpHomeDirectory,
-  getOrganizzeCLI,
-  setHomeDirectory,
-} = require('./helpers')
+  forceUserLogin,
+  mockHomeDirectory,
+} = require('./helpers/setUp')
 
-describe('$ organizze transactions', () => {
-  beforeEach(setHomeDirectory)
-  afterEach(cleanUpHomeDirectory)
+describe.only('$ organizze transactions', () => {
+  beforeEach((done) => {
+    mockHomeDirectory()
+    cleanUpHomeDirectory(done)
+  })
 
   describe('if not authenticated', () => {
-    it('should respond with an error message', (done) => {
-      getOrganizzeCLI()
-        .run('--version')
-        .stdout('0.2.0')
+    it('should show an error message', (done) => {
+      organizze()
+        .assertStdoutEquals("You're not authenticated yet, please login by typing 'organizze login'.")
+        .run('transactions')
+        .end(done)
+    })
+  })
+
+  describe('if authenticated but with wrong credentials', () => {
+    it('should show an error message', (done) => {
+      organizze()
+        .before(() => {
+          forceUserLogin('hello@example.com', 'api_key_example')
+        })
+        .assertStdoutEquals("Invalid credentials, please login by typing 'organizze login'.")
+        .run('transactions')
+        .end(done)
+    })
+  })
+
+  describe('if authenticated', () => {
+    it('show a table with all of the todays transactions', (done) => {
+      organizze()
+        .before(() => forceUserLogin)
+        .assertStdoutEquals('Olar')
+        .run('transactions')
         .end(done)
     })
   })

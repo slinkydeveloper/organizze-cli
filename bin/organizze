@@ -7,6 +7,7 @@ const {
 } = require('../lib/config')
 
 const login = require('../lib/login')
+const transactions = require('../lib/transactions')
 
 commander
   .version(CLI_VERSION)
@@ -16,5 +17,9 @@ commander
   .command('login')
   .description('Login to your account.')
   .action(login)
+
+commander
+  .command('transactions')
+  .action(transactions)
 
 commander.parse(process.argv)
